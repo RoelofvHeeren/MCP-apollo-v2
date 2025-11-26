@@ -144,6 +144,15 @@ async function start() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
+  // Allow browser-based clients (Agent builders) to reach the MCP endpoint.
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+  });
+
   app.all('/mcp', async (req, res) => {
     try {
       // Some clients (e.g., UI-based Agent builders) may not set the expected Accept header.
