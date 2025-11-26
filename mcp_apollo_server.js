@@ -162,6 +162,25 @@ async function start() {
   );
   app.use(express.text({ type: '*/*', limit: '1mb' }));
 
+  // Minimal request logger to debug client compatibility issues (no body content logged).
+  app.use((req, _res, next) => {
+    console.log(
+      JSON.stringify({
+        event: 'http_request',
+        method: req.method,
+        url: req.url,
+        headers: {
+          accept: req.headers.accept,
+          'content-type': req.headers['content-type']
+        }
+      })
+    );
+    next();
+  });
+
+  app.get('/', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
   app.all('/mcp', async (req, res) => {
     try {
       // Some clients (e.g., UI-based Agent builders) may not set the expected Accept header.
