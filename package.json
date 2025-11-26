@@ -4,9 +4,11 @@
   "type": "module",
   "main": "mcp_apollo_server.js",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
     "dotenv": "^16.3.1",
+    "express": "^4.19.2",
     "node-fetch": "^3.3.2",
-    "@modelcontextprotocol/server": "latest"
+    "zod": "^3.23.8"
   },
   "scripts": {
     "start": "node mcp_apollo_server.js"
