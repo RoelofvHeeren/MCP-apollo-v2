@@ -1,30 +1,23 @@
-# Apollo MCP Server (V2)
+# Apollo MCP Server
 
-A minimal Model Context Protocol server that exposes Apollo search tools for AgentFlow. It reads `APOLLO_API_KEY` from `.env`, runs without prompts, and is ready for Railway deployment.
+Simple MCP server exposing Apollo REST endpoints for use inside AgentFlow.
 
 ## Setup
-- Install: `npm install`
-- Configure: copy `.env` and set `APOLLO_API_KEY=YOUR_KEY`
-- Run locally: `npm start`
-- The server starts on port `8000` (override with `PORT`) and serves MCP over HTTP at `/mcp`.
-- Tools registered: `apollo.searchCompanies`, `apollo.searchPeople`, `apollo.getEmailsAndPhone`.
+- Install deps: `npm install`
+- Copy `.env.example` to `.env` and set `APOLLO_API_KEY`
+- Run locally: `npm start` (defaults to port 3000)
+- MCP endpoint: `http://localhost:3000/mcp`
 
 ## Railway Deployment
-- Push this repo to GitHub.
-- Create a new Railway project → Deploy from GitHub → select this repo.
-- Add an environment variable `APOLLO_API_KEY` in Railway project settings.
-- Set the start command to `npm start` (default).
-- Deploy; Railway will expose a public HTTP endpoint. Use `https://<railway-host>/mcp` as the MCP server URL.
+- Push to GitHub, deploy on Railway with `npm start`
+- Add env var `APOLLO_API_KEY`
+- Use `https://<railway-host>/mcp` as the MCP endpoint in AgentFlow
 
-## Connect to AgentFlow
-- Use the Railway deployment URL (or local `http://localhost:8000/mcp`) as the MCP server endpoint.
-- Ensure the AgentFlow pipeline is configured to send JSON-only tool calls and to include the `APOLLO_API_KEY` at runtime via environment variables.
-
-## Tool Usage Examples
-- `apollo.searchCompanies`: `{ "keyword": "fintech", "country": "US", "limit": 5 }`
-- `apollo.searchPeople`: `{ "company": "Stripe", "role": "engineering manager", "limit": 3 }`
-- `apollo.getEmailsAndPhone`: `{ "person_name": "Jane Doe", "company_name": "Acme Corp" }`
+## Tools
+- `apollo.searchCompanies` → `POST https://api.apollo.io/v1/organizations/search` (body `{ q }`)
+- `apollo.searchPeople` → `POST https://api.apollo.io/v1/people/search` (body `{ q }`)
+- `apollo.getEmailsAndPhone` → `GET https://api.apollo.io/v1/people/{personId}`
 
 ## Notes
-- The `/utils` directory is reserved for future shared logic.
-- Responses follow the strict JSON schemas defined in `mcp_apollo_server.js`.
+- Returns Apollo API JSON directly; errors propagate with Apollo’s response body.
+- Requires Node.js 18+. Only uses `mcp-server`, `express`, `node-fetch`, `dotenv`.
