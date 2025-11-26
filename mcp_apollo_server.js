@@ -146,6 +146,12 @@ async function start() {
 
   app.all('/mcp', async (req, res) => {
     try {
+      // Some clients (e.g., UI-based Agent builders) may not set the expected Accept header.
+      // Ensure text/event-stream is present so the transport does not reject the request.
+      const accept = req.headers.accept || '';
+      if (!accept.includes('text/event-stream')) {
+        req.headers.accept = accept ? `${accept}, text/event-stream` : 'application/json, text/event-stream';
+      }
       await transport.handleRequest(req, res, req.body);
     } catch (err) {
       console.error('MCP request error', err);
