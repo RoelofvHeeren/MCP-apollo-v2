@@ -153,7 +153,13 @@ async function start() {
     next();
   });
 
-  // Accept any content-type without failing the request body parsing.
+  // Parse JSON when present; otherwise fall back to raw text.
+  app.use(
+    express.json({
+      type: ['application/json', 'application/json-rpc', 'application/*+json'],
+      limit: '1mb'
+    })
+  );
   app.use(express.text({ type: '*/*', limit: '1mb' }));
 
   app.all('/mcp', async (req, res) => {
@@ -176,7 +182,12 @@ async function start() {
       }
       await transport.handleRequest(req, res, parsedBody);
     } catch (err) {
-      console.error('MCP request error', err);
+      console.error('MCP request error', {
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        error: err?.message || err
+      });
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',
