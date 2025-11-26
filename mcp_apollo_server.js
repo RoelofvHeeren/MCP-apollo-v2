@@ -142,7 +142,6 @@ async function start() {
   await server.connect(transport);
 
   const app = express();
-  app.use(express.json({ limit: '1mb' }));
 
   // Allow browser-based clients (Agent builders) to reach the MCP endpoint.
   app.use((req, res, next) => {
@@ -153,6 +152,9 @@ async function start() {
     next();
   });
 
+  // Accept any content-type without failing the request body parsing.
+  app.use(express.text({ type: '*/*', limit: '1mb' }));
+
   app.all('/mcp', async (req, res) => {
     try {
       // Some clients (e.g., UI-based Agent builders) may not set the expected Accept header.
@@ -161,7 +163,17 @@ async function start() {
       if (!accept.includes('text/event-stream')) {
         req.headers.accept = accept ? `${accept}, text/event-stream` : 'application/json, text/event-stream';
       }
-      await transport.handleRequest(req, res, req.body);
+      let parsedBody = undefined;
+      if (typeof req.body === 'string' && req.body.trim()) {
+        try {
+          parsedBody = JSON.parse(req.body);
+        } catch (_err) {
+          parsedBody = req.body; // fall back to raw string; transport will ignore if not needed
+        }
+      } else if (typeof req.body === 'object' && req.body !== null) {
+        parsedBody = req.body;
+      }
+      await transport.handleRequest(req, res, parsedBody);
     } catch (err) {
       console.error('MCP request error', err);
       if (!res.headersSent) {
