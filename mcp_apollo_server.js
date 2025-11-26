@@ -134,8 +134,9 @@ server.registerTool(
 
 // HTTP transport wiring for Railway/local
 async function start() {
+  // Stateless mode so clients (e.g., AgentFlow) don't need to manage session IDs between calls.
   const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: () => randomUUID(),
+    sessionIdGenerator: undefined,
     enableJsonResponse: true
   });
 
